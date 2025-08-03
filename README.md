@@ -6,7 +6,7 @@ pip install -r requirements-gpu.txt
 ```
 For cpu based systems
 ```bash
-pip freeze > requirements-cpu.txt
+pip install -r requirements-cpu.txt
 ```
 ## The models are not uploaded to Github. 
 ## Instead they are uploaded in drive. Download them and use them before running server
