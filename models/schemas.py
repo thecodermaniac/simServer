@@ -6,4 +6,4 @@ class PriceRequest(BaseModel):
     prompt: Optional[str] = None  # optional admin prompt
 
 class PriceResponse(BaseModel):
-    predicted_price: float
+    predicted_price: list

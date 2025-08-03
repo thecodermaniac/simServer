@@ -1,31 +1,34 @@
-# services/load_model.py
-
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import torch
+# import os
 
-def load_model(model_path: str, base_model_path: str):
-    print("🔄 Loading base model...")
-    base_model = AutoModelForCausalLM.from_pretrained(
-        base_model_path,
-        torch_dtype=torch.bfloat16 if torch.backends.mps.is_available() else torch.float32,
-        low_cpu_mem_usage=True
+def load_model(model_path: str, device_preference="auto"):
+    is_gpu = torch.cuda.is_available() and device_preference != "cpu"
+    print(f"🖥️ Loading model for {'GPU' if is_gpu else 'CPU'}...")
+
+    # Device setup
+    device = torch.device("cuda" if is_gpu else "cpu")
+
+    # Optional quantization config for GPU
+    quant_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.float16
+    ) if is_gpu else None
+
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+
+    # Load model with or without quantization
+    model = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        torch_dtype=torch.float16 if is_gpu else torch.float32,
+        device_map="auto" if is_gpu else None,
+        quantization_config=quant_config
     )
 
-    print("🔌 Loading LoRA adapter...")
-    model = PeftModel.from_pretrained(base_model, model_path)
-
-    print("🧠 Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(base_model_path)
-
-    # Optional: Compile model for speed (PyTorch 2.0+)
-    try:
-        print("🚀 Compiling model for faster CPU inference...")
-        model = torch.compile(model)
-    except Exception as e:
-        print("⚠️ torch.compile failed or not available:", str(e))
-
+    model.to(device)
     model.eval()
 
     return model, tokenizer
-

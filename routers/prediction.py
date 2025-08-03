@@ -9,7 +9,8 @@ router = APIRouter()
 def predict_price(data: PriceRequest):
     if len(data.history) < 5:
         raise HTTPException(status_code=400, detail="At least 5 price points required.")
-    
+    if not data.prompt:
+        raise HTTPException(status_code=400, detail="prompt is required.")
     prediction = predict_next_price(data.history, data.prompt)
     
     if prediction is None:

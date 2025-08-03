@@ -3,7 +3,7 @@ __pycache__/
 *.pt
 *.bin
 *.safetensors
-modelsAI/tinyllama-lora-extended-v2/*
+modelsAI/*
 # for fastapi 
 .idea
 .ipynb_checkpoints
