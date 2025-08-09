@@ -16,4 +16,7 @@ def predict_price(data: PriceRequest):
     if prediction is None:
         raise HTTPException(status_code=500, detail="Model could not generate a valid number.")
     
+    print(f"Received history: {data.history}")
+    print(f"Received prompt: {data.prompt}")
+    print(f"Prediction: {prediction}")
     return PriceResponse(predicted_price=prediction)
